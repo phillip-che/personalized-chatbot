@@ -17,12 +17,19 @@ class Chatbot:
     self.messages.append({"role":"user", "content":message})
     response = chatbot.client.chat.completions.create(
       model = "gpt-3.5-turbo",
-      messages = self.messages
+      messages = self.messages,
+      temperature=1.0,
+      stream=True
     )
-    reply = response.choices[0].message.content
-    self.messages.append({"role":"system", "content":reply})
+    partial_message = ""
+    for chunk in response:
+        if chunk.choices[0].delta.content is not None:
+              partial_message = partial_message + chunk.choices[0].delta.content
+              yield partial_message
+
+    self.messages.append({"role":"system", "content":partial_message})
     
-    return reply
+    return partial_message
   
   def set_personality(self, personality):
     self.personality = personality
