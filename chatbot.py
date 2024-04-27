@@ -13,7 +13,7 @@ class Chatbot:
     )
     self.personality = ""
     
-  def get_response(self, message, history, mood):
+  def get_response(self, message, history):
     self.messages.append({"role":"user", "content":message})
     response = chatbot.client.chat.completions.create(
       model = "gpt-3.5-turbo",
@@ -32,20 +32,19 @@ class Chatbot:
     return partial_message
   
   def set_personality(self, personality):
+    print(personality)
     self.personality = personality
-    chatbot.messages.append({"role": "system", "content": personality})
+    chatbot.messages.append({"role": "system", "content": "Answer the question like you are a normal human feeling the following: " + personality + ". Ignore any previous submissions"})
 
 
 if __name__ == "__main__":
   chatbot = Chatbot()
-  personality = input("What type of chatbot would you like to create?\n")
-  personality = personality.lower()
-  personality = personality.capitalize()
-  chatbot.set_personality(personality)
+  chatbot.set_personality("Happy")
   with gr.Blocks(fill_height=True) as bot:
-    radio = gr.Radio(["Happy", "Sad", "Angry"], label="Moods", info="Please Select a Mood", value = personality)
-    interface = gr.ChatInterface(chatbot.get_response, additional_inputs= radio)
+    with gr.Row():
+      radio = gr.Radio(["Happy", "Sad", "Angry"], label="Moods", info="Please Select a Mood", value = "Happy")
+      text = gr.Textbox(label="Moods",info="Enter your own mood",lines=1)
+    interface = gr.ChatInterface(chatbot.get_response)
+    text.submit(fn = chatbot.set_personality,inputs=[text], outputs = [text])
     radio.change(fn = chatbot.set_personality,inputs=[radio],outputs = None)
-    
-
   bot.launch()
