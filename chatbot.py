@@ -4,8 +4,9 @@ import gradio as gr
 import os
 
 class Chatbot:
-
-  def __init__(self):
+  
+  def __init__(self): 
+    self.options = ["Happy", "Sad", "Angry"]
     load_dotenv()
     self.messages = []
     self.client = OpenAI(
@@ -32,9 +33,12 @@ class Chatbot:
     return partial_message
   
   def set_personality(self, personality):
-    print(personality)
     self.personality = personality
     chatbot.messages.append({"role": "system", "content": "Answer the question like you are a normal human feeling the following: " + personality + ". Ignore any previous submissions"})
+  def updateRadio(self,personality):
+    if personality not in self.options:
+      self.options.append(personality)
+    return gr.Radio(self.options, label="Moods", info="Please Select a Mood", value = personality)
 
 
 if __name__ == "__main__":
@@ -42,9 +46,10 @@ if __name__ == "__main__":
   chatbot.set_personality("Happy")
   with gr.Blocks(fill_height=True) as bot:
     with gr.Row():
-      radio = gr.Radio(["Happy", "Sad", "Angry"], label="Moods", info="Please Select a Mood", value = "Happy")
+      radio = gr.Radio(chatbot.options, label="Moods", info="Please Select a Mood", value = "Happy")
       text = gr.Textbox(label="Moods",info="Enter your own mood",lines=1)
     interface = gr.ChatInterface(chatbot.get_response)
     text.submit(fn = chatbot.set_personality,inputs=[text], outputs = [text])
+    text.submit(fn = chatbot.updateRadio,inputs=[text], outputs = [radio])
     radio.change(fn = chatbot.set_personality,inputs=[radio],outputs = None)
   bot.launch()
