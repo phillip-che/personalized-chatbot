@@ -35,11 +35,12 @@ class Chatbot:
   def set_personality(self, personality):
     self.personality = personality
     chatbot.messages.append({"role": "system", "content": "Answer the question like you are a normal human feeling the following: " + personality + ". Ignore any previous submissions"})
+
   def updateRadio(self,personality):
     if personality not in self.options:
       self.options.append(personality)
     return gr.Radio(self.options, label="Moods", info="Please Select a Mood", value = personality)
-
+  
 
 if __name__ == "__main__":
   chatbot = Chatbot()
